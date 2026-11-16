@@ -157,12 +157,10 @@ function EditAccount({ account, onClose, act }: { account: AccountView | null; o
   return (
     <Modal open={!!account} title="Edit account" onClose={onClose}>
       <form onSubmit={e => { e.preventDefault(); onClose(); act(() => call('edit', account!.id, name, emoji ?? null)) }} className="space-y-4">
-        {!account?.isDefault && (
-          <label className="block text-xs text-neutral-400">
-            Name
-            <input autoFocus value={name} onChange={e => setName(e.target.value)} maxLength={40} className={`${inputCls} mt-1.5`} />
-          </label>
-        )}
+        <label className="block text-xs text-neutral-400">
+          Name
+          <input autoFocus value={name} onChange={e => setName(e.target.value)} maxLength={40} className={`${inputCls} mt-1.5`} />
+        </label>
         <EmojiPicker value={emoji} onChange={setEmoji} />
         <div className="flex justify-end gap-2">
           <Button type="button" onClick={onClose}>Cancel</Button>

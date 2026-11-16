@@ -216,14 +216,15 @@ const api = {
   edit(id: string, name: string, emoji: string | null) {
     const a = account(id)
     name = String(name).trim().slice(0, 40)
-    if (!a.isDefault) { if (!name) throw new Error('Name cannot be empty'); a.name = name } // Main keeps its name
+    if (!name) throw new Error('Name cannot be empty')
+    a.name = name
     if (emoji && !EMOJIS.some(e => e.emoji === emoji)) throw new Error('Unknown emoji')
     if (emoji) a.emoji = emoji; else delete a.emoji
     save()
   },
   async remove(id: string) {
     const a = account(id)
-    if (a.isDefault) throw new Error('The Main account cannot be removed')
+    if (a.isDefault) throw new Error('Your original login cannot be removed')
     // Only folders switch-man created go to the Trash; an imported AccountDeck folder is just forgotten.
     if (store.ownsDir(a.dir) && existsSync(a.dir)) await shell.trashItem(a.dir)
     state.accounts = state.accounts.filter(x => x !== a)
