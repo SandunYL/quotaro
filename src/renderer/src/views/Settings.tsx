@@ -24,7 +24,7 @@ export default function Settings({ state, act }: { state: AppState; act: Act }) 
           {!state.shellLinked && <Button kind="primary" onClick={() => act(() => call('linkShell'), 'Connected. Open a new terminal window once.')}>Connect</Button>}
         </Item>
         <Item title="Claude Code usage tracking" text={untracked.length
-          ? `Off for ${untracked.map(a => a.name).join(', ')}. switch-man reads limits from Claude Code's status line; your own status line keeps working.`
+          ? `Off for ${untracked.map(a => a.name).join(', ')}. Quotaro reads limits from Claude Code's status line; your own status line keeps working.`
           : 'On for every Claude Code account.'}>
           {untracked.length > 0 && <Button onClick={() => act(async () => { for (const a of untracked) await call('enableTracking', a.id) }, 'Tracking on')}>Turn on all</Button>}
         </Item>
@@ -33,7 +33,7 @@ export default function Settings({ state, act }: { state: AppState; act: Act }) 
         </Item>
       </div>
       <p className="mt-6 max-w-2xl text-xs leading-relaxed text-neutral-600">
-        switch-man works from files on this computer. It never reads or sends login tokens. Codex emails come from the local sign-in file and stay on this machine.
+        Quotaro works from files on this computer. It never reads or sends login tokens. Codex emails come from the local sign-in file and stay on this machine.
       </p>
     </div>
   )

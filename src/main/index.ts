@@ -8,7 +8,10 @@ import { backfill, claudeIdentity, claudeUsage, codexEmail, codexUsage, dedupe, 
 import * as store from './store.ts'
 import { copyChat, listSessions, messagesOf, ownedLog, startRun, stopAll, stopRun, SESSION_ID } from './sessions.ts'
 
-// One switch-man per user: a second launch just focuses the existing window.
+// Dev runs would otherwise show "Electron" in menus and notifications.
+app.setName('Quotaro')
+
+// One Quotaro per user: a second launch just focuses the existing window.
 if (!app.requestSingleInstanceLock()) app.quit()
 
 // Apps opened from the Dock or a launcher get a bare PATH; agents need the one the user's shell has.
@@ -143,7 +146,7 @@ function updateTray() {
     for (const v of accs) items.push({ label: (v.emoji ? `${v.emoji} ` : '') + v.name + pct(v), type: 'radio', checked: v.active, click: () => api.select(v.id) })
     items.push({ type: 'separator' })
   }
-  items.push({ label: 'Open switch-man', click: showWindow }, { label: 'Quit', role: 'quit' })
+  items.push({ label: 'Open Quotaro', click: showWindow }, { label: 'Quit', role: 'quit' })
   const key = JSON.stringify(items.map(i => [i.label, i.checked]))
   if (key === trayKey) return // rebuilding an unchanged menu flickers on Linux
   trayKey = key
@@ -227,7 +230,7 @@ const api = {
   async remove(id: string) {
     const a = account(id)
     if (a.isDefault) throw new Error('Your original login cannot be removed')
-    // Only folders switch-man created go to the Trash; an imported AccountDeck folder is just forgotten.
+    // Only folders Quotaro created go to the Trash; an imported AccountDeck folder is just forgotten.
     if (store.ownsDir(a.dir) && existsSync(a.dir)) await shell.trashItem(a.dir)
     state.accounts = state.accounts.filter(x => x !== a)
     if (state.active[a.service] === id) state.active[a.service] = `${a.service}-default`
@@ -343,7 +346,7 @@ app.whenReady().then(async () => {
   const icon = nativeImage.createFromBuffer(Buffer.from(TRAY_PNG, 'base64'), { scaleFactor: 2 })
   if (process.platform === 'darwin') icon.setTemplateImage(true)
   tray = new Tray(icon)
-  tray.setToolTip('switch-man')
+  tray.setToolTip('Quotaro')
   if (process.platform !== 'darwin') tray.on('click', showWindow)
   const hidden = process.argv.includes('--hidden') || app.getLoginItemSettings().wasOpenedAtLogin
   createWindow(!hidden)

@@ -1,5 +1,5 @@
 {
-  "name": "switch-man",
+  "name": "quotaro",
   "version": "0.1.0",
   "description": "Switch AI coding accounts, track limits, and talk to running agents. Mac, Linux, Windows.",
   "main": "out/main/index.js",
@@ -31,11 +31,11 @@
     "react": "^19.3.1",
     "react-dom": "^19.3.1"
   },
-  "productName": "switch-man",
+  "productName": "Quotaro",
   "private": true,
   "build": {
-    "appId": "dev.switchman.app",
-    "productName": "switch-man",
+    "appId": "dev.quotaro.app",
+    "productName": "Quotaro",
     "files": [
       "out/**/*"
     ],

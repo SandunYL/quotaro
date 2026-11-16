@@ -93,7 +93,7 @@ export async function writeEnv(s: State) {
     }
     return
   }
-  const lines = ['# Written by switch-man. Change accounts in the app.']
+  const lines = ['# Written by Quotaro. Change accounts in the app.']
   for (const svc of ['claude', 'codex'] as Service[]) {
     const a = pick(svc), v = ENV_VAR[svc]
     lines.push(a ? `export ${v}=${shq(a.dir)}` : `unset ${v}`)
@@ -131,9 +131,9 @@ export function linkShell() {
 
 // ---- Usage tracking (Claude Code status line) ----
 
-// Saves each session's status JSON for switch-man, then runs the account's own status line, if it had one.
+// Saves each session's status JSON for Quotaro, then runs the account's own status line, if it had one.
 const SCRIPT = `#!/bin/sh
-# switch-man: saves Claude Code's status-line JSON (usage limits) per session.
+# Quotaro: saves Claude Code's status-line JSON (usage limits) per session.
 d="$1"; s="$d/.switch-man-status"
 input=$(cat)
 sid=$(printf '%s' "$input" | sed -n 's/.*"session_id" *: *"\\([A-Za-z0-9_-]*\\)".*/\\1/p' | head -n 1)
@@ -150,7 +150,7 @@ const settingsPath = (a: Account) => join(a.dir, 'settings.json')
 
 export function hasTracking(a: Account) {
   if (read(settingsPath(a)).includes('.switch-man')) return true
-  // AccountDeck's hook writes the same files, which switch-man reads too.
+  // AccountDeck's hook writes the same files, which Quotaro reads too.
   return read(settingsPath(a)).includes('claude-status.sh') && existsSync(join(a.dir, STATUS_DIRS[1]))
 }
 
@@ -185,7 +185,7 @@ export async function runInTerminal(a: Account, words: string[], cwd: string | u
   }
   const lines = [
     process.platform === 'darwin' ? '#!/bin/zsh -il' : '#!/bin/sh',
-    `printf '\\033]0;switch-man: ${a.service} ${a.id}\\007'`,
+    `printf '\\033]0;Quotaro: ${a.service} ${a.id}\\007'`,
     cwd ? `cd ${shq(cwd)}` : '',
     a.isDefault ? `unset ${v}` : `export ${v}=${shq(a.dir)}`,
     words.join(' '),

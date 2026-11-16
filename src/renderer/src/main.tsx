@@ -49,7 +49,7 @@ function App() {
             animate={still ? undefined : { rotate: [0, -10, 8, -6, 0], y: [0, -4, 0, -2, 0], scale: [1.25, 1.35, 1.25, 1.3, 1.25] }}
             transition={{ duration: 1.6, repeat: Infinity, ease: 'easeInOut' }}
           />
-          <span className="text-sm font-semibold tracking-tight text-neutral-100">switch-man</span>
+          <span className="text-sm font-semibold tracking-tight text-neutral-100">Quotaro</span>
         </div>
         {VIEWS.map(v => (
           <button

@@ -1,4 +1,4 @@
-# switch-man
+# Quotaro
 
 Switch AI coding accounts, watch every usage limit, and talk to your running agents, all from one app. Runs on macOS, Linux and Windows.
 
@@ -16,13 +16,15 @@ Starts from everything [AccountDeck](https://github.com/nadim-sheikh/accountDeck
    - Backfilled from Claude Desktop usage history, Codex session logs, and Claude Code token counts.
 3. **Animated, production-grade UI.** Screens designed in Google Stitch, then built with Tailwind and Motion.
 4. **Smart providers.** A provider's section shows up only once you've added more than one account for it.
-5. **Name.** switch-man.
+5. **Name.** Quotaro.
 6. **Ongoing agents and chats.**
    - Running Claude Code and Codex sessions are listed live: title, folder, account, and last activity.
-   - Agents started from switch-man are owned by the app and take messages directly.
+   - Agents started from Quotaro are owned by the app and take messages directly.
    - Sending to a chat already open in a terminal continues it as a background run with `--resume`.
 
 ## What it does
+
+Your data lives in `~/.switch-man` (the folder keeps the app's first name, so existing setups keep working).
 
 - **Accounts.** Claude Code and Codex logins, each in its own folder. Your existing logins show as "Main"; AccountDeck accounts are imported on first run.
 - **Switching.** "Connect terminal" adds a hook to `.zshrc` / `.bashrc` that reads `~/.switch-man/env.sh` before every prompt. Windows sets user env vars instead.
