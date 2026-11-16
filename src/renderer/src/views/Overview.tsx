@@ -3,7 +3,7 @@ import { AnimatePresence, motion } from 'motion/react'
 import type { AccountView, AppState, Service } from '../../../shared/types.ts'
 import { call } from '../api.ts'
 import type { Act } from '../main.tsx'
-import { Avatar, Button, LimitView, Modal, SERVICE_LABEL, inUse, inputCls, spring, timeLeft, useNow } from '../ui.tsx'
+import { Avatar, Button, EmojiPicker, LimitView, Modal, SERVICE_LABEL, inUse, inputCls, spring, timeLeft, useNow } from '../ui.tsx'
 
 export default function Overview({ state, act }: { state: AppState; act: Act }) {
   const now = useNow()
@@ -27,7 +27,7 @@ export default function Overview({ state, act }: { state: AppState; act: Act }) 
       className={`rounded-2xl glass p-4 ring-1 transition ${a.active && canSwitch ? 'ring-brand-400/50 shadow-[0_0_48px_-16px_rgba(124,92,255,0.8)]' : 'ring-white/5'}`}
     >
       <header className="mb-3 flex items-center gap-3">
-        <Avatar name={a.name} service={a.service} />
+        <Avatar name={a.name} service={a.service} emoji={a.emoji} />
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
             <h3 className="truncate text-sm font-semibold text-neutral-100">{a.name}</h3>
@@ -64,7 +64,7 @@ export default function Overview({ state, act }: { state: AppState; act: Act }) 
       <footer className="mt-3 flex flex-wrap gap-1.5">
         <Button onClick={() => act(() => call('signIn', a.id))}>{a.email ? 'Sign in again' : 'Sign in'}</Button>
         <Button onClick={() => act(() => call('reveal', a.id))}>Show folder</Button>
-        {!a.isDefault && <Button onClick={() => setRenaming(a)}>Rename</Button>}
+        <Button onClick={() => setRenaming(a)}>Edit</Button>
         {!a.isDefault && <Button kind="danger" onClick={() => setRemoving(a)}>Remove</Button>}
       </footer>
     </motion.article>
@@ -107,7 +107,7 @@ export default function Overview({ state, act }: { state: AppState; act: Act }) 
       {shown.length === 0 && <p className="text-sm text-neutral-500">No Claude Code or Codex logins found yet. Add an account to start.</p>}
 
       <AddAccount open={adding} onClose={() => setAdding(false)} act={act} />
-      <Rename account={renaming} onClose={() => setRenaming(null)} act={act} />
+      <EditAccount key={renaming?.id} account={renaming} onClose={() => setRenaming(null)} act={act} />
       <Modal open={!!removing} title={`Remove ${removing?.name}?`} onClose={() => setRemoving(null)}>
         <p className="mb-4 text-sm text-neutral-400">Its folder moves to the Trash, so you can restore it. Imported AccountDeck folders are left in place.</p>
         <div className="flex justify-end gap-2">
@@ -122,7 +122,8 @@ export default function Overview({ state, act }: { state: AppState; act: Act }) 
 function AddAccount({ open, onClose, act }: { open: boolean; onClose: () => void; act: Act }) {
   const [service, setService] = useState<Service>('claude')
   const [name, setName] = useState('')
-  const submit = () => { onClose(); act(() => call('addAccount', service, name), 'Finish signing in in the terminal window'); setName('') }
+  const [emoji, setEmoji] = useState<string>()
+  const submit = () => { onClose(); act(() => call('addAccount', service, name, emoji), 'Finish signing in in the terminal window'); setName(''); setEmoji(undefined) }
   return (
     <Modal open={open} title="Add account" onClose={onClose}>
       <form onSubmit={e => { e.preventDefault(); submit() }} className="space-y-4">
@@ -139,6 +140,7 @@ function AddAccount({ open, onClose, act }: { open: boolean; onClose: () => void
           Name
           <input autoFocus value={name} onChange={e => setName(e.target.value)} placeholder="Work, Personal…" maxLength={40} className={`${inputCls} mt-1.5`} />
         </label>
+        <EmojiPicker value={emoji} onChange={setEmoji} />
         <p className="text-xs text-neutral-500">A terminal opens so you can sign in. The account gets its own folder; your Main login is untouched.</p>
         <div className="flex justify-end gap-2">
           <Button type="button" onClick={onClose}>Cancel</Button>
@@ -149,12 +151,19 @@ function AddAccount({ open, onClose, act }: { open: boolean; onClose: () => void
   )
 }
 
-function Rename({ account, onClose, act }: { account: AccountView | null; onClose: () => void; act: Act }) {
-  const [name, setName] = useState('')
+function EditAccount({ account, onClose, act }: { account: AccountView | null; onClose: () => void; act: Act }) {
+  const [name, setName] = useState(account?.name ?? '')
+  const [emoji, setEmoji] = useState(account?.emoji)
   return (
-    <Modal open={!!account} title="Rename account" onClose={onClose}>
-      <form onSubmit={e => { e.preventDefault(); onClose(); act(() => call('rename', account!.id, name)) }} className="space-y-4">
-        <input autoFocus defaultValue={account?.name} onChange={e => setName(e.target.value)} maxLength={40} aria-label="Name" className={inputCls} />
+    <Modal open={!!account} title="Edit account" onClose={onClose}>
+      <form onSubmit={e => { e.preventDefault(); onClose(); act(() => call('edit', account!.id, name, emoji ?? null)) }} className="space-y-4">
+        {!account?.isDefault && (
+          <label className="block text-xs text-neutral-400">
+            Name
+            <input autoFocus value={name} onChange={e => setName(e.target.value)} maxLength={40} className={`${inputCls} mt-1.5`} />
+          </label>
+        )}
+        <EmojiPicker value={emoji} onChange={setEmoji} />
         <div className="flex justify-end gap-2">
           <Button type="button" onClick={onClose}>Cancel</Button>
           <Button kind="primary" type="submit" disabled={!name.trim()}>Save</Button>

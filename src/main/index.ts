@@ -2,7 +2,7 @@ import { app, BrowserWindow, ipcMain, Menu, Notification, Tray, dialog, nativeIm
 import { execFileSync } from 'node:child_process'
 import { appendFileSync, existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
-import type { AccountView, AppState, Msg, Run, Sample, Service, WindowKind } from '../shared/types.ts'
+import { EMOJIS, type AccountView, type AppState, type Msg, type Run, type Sample, type Service, type WindowKind } from '../shared/types.ts'
 import { backfill, claudeIdentity, claudeUsage, codexEmail, codexUsage, dedupe, limitsToStatus, readTail, autoStartAt } from './usage.ts'
 import * as store from './store.ts'
 import { copyChat, listSessions, messagesOf, ownedLog, startRun, stopAll, stopRun, SESSION_ID } from './sessions.ts'
@@ -139,7 +139,7 @@ function updateTray() {
     const accs = views.filter(v => v.service === svc && v.exists)
     if (accs.length < 2) continue
     items.push({ label: svc === 'claude' ? 'Claude Code' : 'Codex', enabled: false })
-    for (const v of accs) items.push({ label: v.name + pct(v), type: 'radio', checked: v.active, click: () => api.select(v.id) })
+    for (const v of accs) items.push({ label: (v.emoji ? `${v.emoji} ` : '') + v.name + pct(v), type: 'radio', checked: v.active, click: () => api.select(v.id) })
     items.push({ type: 'separator' })
   }
   items.push({ label: 'Open switch-man', click: showWindow }, { label: 'Quit', role: 'quit' })
@@ -202,21 +202,23 @@ const api = {
   state: () => snapshot(),
   refresh: () => { refresh(); return snapshot() },
 
-  async addAccount(service: Service, name: string) {
+  async addAccount(service: Service, name: string, emoji?: string) {
     if (service !== 'claude' && service !== 'codex') throw new Error('Unknown app')
     name = String(name).trim().slice(0, 40)
     if (!name) throw new Error('Give the account a name')
     const a = store.newAccount(service, name)
+    if (EMOJIS.some(e => e.emoji === emoji)) a.emoji = emoji
     state.accounts.push(a)
     if (service === 'claude') store.enableTracking(a)
     save()
     await api.signIn(a.id)
   },
-  rename(id: string, name: string) {
+  edit(id: string, name: string, emoji: string | null) {
     const a = account(id)
     name = String(name).trim().slice(0, 40)
-    if (!name) throw new Error('Name cannot be empty')
-    a.name = name
+    if (!a.isDefault) { if (!name) throw new Error('Name cannot be empty'); a.name = name } // Main keeps its name
+    if (emoji && !EMOJIS.some(e => e.emoji === emoji)) throw new Error('Unknown emoji')
+    if (emoji) a.emoji = emoji; else delete a.emoji
     save()
   },
   async remove(id: string) {

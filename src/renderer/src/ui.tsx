@@ -1,6 +1,6 @@
 import { useEffect, useId, useState, type ReactNode } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
-import type { AccountView, Limit, Service } from '../../shared/types.ts'
+import { EMOJIS, type AccountView, type Limit, type Service } from '../../shared/types.ts'
 
 export const SERVICE_LABEL: Record<Service, string> = { claude: 'Claude Code', codex: 'Codex' }
 /** Accounts the user really has: any they added, or a Main login that is signed in or has usage. An unused app stays hidden. */
@@ -120,7 +120,31 @@ export function Modal({ open, title, onClose, children }: { open: boolean; title
 
 export const inputCls = 'w-full rounded-lg bg-black/40 px-3 py-2 text-sm text-neutral-100 ring-1 ring-white/10 placeholder:text-neutral-600 focus:outline-none focus:ring-brand-400/60'
 
-export function Avatar({ name, service }: { name: string; service: Service }) {
+export function Avatar({ name, service, emoji }: { name: string; service: Service; emoji?: string }) {
   const tone = service === 'claude' ? 'from-orange-400/80 to-rose-500/80' : 'from-emerald-400/80 to-teal-600/80'
-  return <div className={`grid size-9 shrink-0 place-items-center rounded-xl bg-gradient-to-br ${tone} text-sm font-semibold text-white`} aria-hidden>{name.slice(0, 1).toUpperCase()}</div>
+  return (
+    <div className={`grid size-9 shrink-0 place-items-center rounded-xl bg-gradient-to-br ${tone} font-semibold text-white ${emoji ? 'text-lg' : 'text-sm'}`} aria-hidden>
+      {emoji ?? name.slice(0, 1).toUpperCase()}
+    </div>
+  )
+}
+
+/** Six account icons, or none (the name's first letter). */
+export function EmojiPicker({ value, onChange }: { value?: string; onChange: (e?: string) => void }) {
+  return (
+    <fieldset>
+      <legend className="mb-2 text-xs text-neutral-400">Icon</legend>
+      <div className="flex flex-wrap gap-1.5" role="radiogroup">
+        {[{ emoji: undefined, label: 'None' }, ...EMOJIS].map(e => (
+          <button
+            key={e.label} type="button" role="radio" aria-checked={value === e.emoji} title={e.label} onClick={() => onChange(e.emoji)}
+            className={`grid size-10 place-items-center rounded-xl text-lg ring-1 transition ${value === e.emoji ? 'bg-brand-500/20 ring-brand-400/60' : 'ring-white/10 hover:bg-white/5'}`}
+          >
+            {e.emoji ?? <span className="text-[10px] text-neutral-400">None</span>}
+            <span className="sr-only">{e.label}</span>
+          </button>
+        ))}
+      </div>
+    </fieldset>
+  )
 }

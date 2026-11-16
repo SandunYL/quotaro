@@ -3,7 +3,16 @@
 export type Service = 'claude' | 'codex'
 export type WindowKind = '5h' | 'week'
 
-export interface Account { id: string; service: Service; name: string; dir: string; isDefault: boolean }
+export interface Account { id: string; service: Service; name: string; dir: string; isDefault: boolean; emoji?: string }
+
+export const EMOJIS = [
+  { emoji: '💼', label: 'Work' },
+  { emoji: '👤', label: 'Personal' },
+  { emoji: '🏠', label: 'Home' },
+  { emoji: '🎨', label: 'Hobby' },
+  { emoji: '🚀', label: 'Side project' },
+  { emoji: '🎓', label: 'Learning' },
+] as const
 
 export interface Limit { percent: number; resetsAt: number | null } // resetsAt in ms
 export interface Usage { five?: Limit; week?: Limit; asOf: number }
