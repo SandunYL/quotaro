@@ -1,6 +1,6 @@
 import { StrictMode, useCallback, useEffect, useState } from 'react'
 import { createRoot } from 'react-dom/client'
-import { AnimatePresence, motion } from 'motion/react'
+import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
 import type { AppState } from '../../shared/types.ts'
 import { call, onRun, onState } from './api.ts'
 import { spring } from './ui.tsx'
@@ -20,6 +20,7 @@ function App() {
   const [state, setState] = useState<AppState | null>(null)
   const [view, setView] = useState<View>('Overview')
   const [toast, setToast] = useState<{ text: string; error?: boolean } | null>(null)
+  const still = useReducedMotion()
 
   useEffect(() => {
     call('state').then(setState)
@@ -42,7 +43,12 @@ function App() {
     <div className="flex h-screen aurora text-neutral-200 antialiased">
       <nav className="flex w-52 shrink-0 flex-col border-r border-white/5 bg-white/[0.02] backdrop-blur-xl px-3 pb-4 pt-12" aria-label="Main">
         <div className="mb-6 flex items-center gap-2 px-2">
-          <img src={logo} alt="" className="size-8 scale-125" />
+          {/* A little dance that never stops; held still for people who ask their OS for less motion. */}
+          <motion.img
+            src={logo} alt="" className="size-8 scale-125"
+            animate={still ? undefined : { rotate: [0, -10, 8, -6, 0], y: [0, -4, 0, -2, 0], scale: [1.25, 1.35, 1.25, 1.3, 1.25] }}
+            transition={{ duration: 1.6, repeat: Infinity, ease: 'easeInOut' }}
+          />
           <span className="text-sm font-semibold tracking-tight text-neutral-100">switch-man</span>
         </div>
         {VIEWS.map(v => (
