@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from 'react'
+import { useEffect, useId, useState, type ReactNode } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
 import type { Limit, Service } from '../../shared/types.ts'
 
@@ -27,15 +27,19 @@ export function ago(t: number, now: number) {
   return h < 24 ? `${h}h ago` : `${Math.round(h / 24)}d ago`
 }
 
-export const level = (p: number) => (p >= 85 ? 'text-red-400' : p >= 60 ? 'text-amber-400' : 'text-emerald-400')
+// Fill colours by how close the limit is: calm cyan, then amber, then hot pink-red.
+const RING_STOPS = (p: number) => (p >= 85 ? ['#fb7185', '#ef4444'] : p >= 60 ? ['#fde047', '#fb923c'] : ['#22d3ee', '#a78bfa'])
 
 export function Ring({ percent, size = 44 }: { percent: number; size?: number }) {
-  const r = (size - 6) / 2, c = 2 * Math.PI * r, p = Math.min(100, Math.max(0, percent))
+  const r = (size - 6) / 2, c = 2 * Math.PI * r, p = Math.min(100, Math.max(0, percent)), id = 'ring' + useId().replace(/[^a-zA-Z0-9]/g, '')
+  const [a, b] = RING_STOPS(p)
   return (
-    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className={`-rotate-90 ${level(p)}`} aria-hidden>
-      <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="currentColor" strokeOpacity={0.15} strokeWidth={4} />
+    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="-rotate-90" aria-hidden>
+      <defs><linearGradient id={id} x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor={a} /><stop offset="1" stopColor={b} /></linearGradient></defs>
+      <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="white" strokeOpacity={0.08} strokeWidth={4} />
       <motion.circle
-        cx={size / 2} cy={size / 2} r={r} fill="none" stroke="currentColor" strokeWidth={4} strokeLinecap="round"
+        cx={size / 2} cy={size / 2} r={r} fill="none" stroke={`url(#${id})`} strokeWidth={4} strokeLinecap="round"
+        style={{ filter: `drop-shadow(0 0 4px ${a}80)` }}
         strokeDasharray={c} initial={{ strokeDashoffset: c }} animate={{ strokeDashoffset: c * (1 - p / 100) }}
         transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
       />
@@ -60,7 +64,7 @@ export function LimitView({ label, limit, now, bell, onBell }: { label: string; 
       </div>
       <button
         onClick={onBell} aria-pressed={bell} title={bell ? 'Alert on reset is on' : 'Alert me when this resets'}
-        className={`grid size-7 place-items-center rounded-lg transition ${bell ? 'bg-violet-500/20 text-violet-300' : 'text-neutral-500 hover:bg-white/5 hover:text-neutral-300'}`}
+        className={`grid size-7 place-items-center rounded-lg transition ${bell ? 'bg-brand-500/20 text-brand-300' : 'text-neutral-500 hover:bg-white/5 hover:text-neutral-300'}`}
       >
         <BellIcon on={bell} />
         <span className="sr-only">{bell ? `Turn off ${label} reset alert` : `Alert when ${label} limit resets`}</span>
@@ -79,11 +83,11 @@ export function BellIcon({ on }: { on: boolean }) {
 
 export function Button({ children, kind = 'ghost', className = '', ...p }: React.ButtonHTMLAttributes<HTMLButtonElement> & { kind?: 'primary' | 'ghost' | 'danger' }) {
   const k = {
-    primary: 'bg-violet-500 text-white hover:bg-violet-400 disabled:bg-violet-500/40',
+    primary: 'bg-gradient-to-r from-brand-500 to-fuchsia-500 text-white shadow-[0_6px_20px_-8px_rgba(124,92,255,0.9)] hover:brightness-110 disabled:opacity-40 disabled:shadow-none',
     ghost: 'bg-white/5 text-neutral-200 hover:bg-white/10 disabled:text-neutral-500',
     danger: 'bg-red-500/15 text-red-300 hover:bg-red-500/25',
   }[kind]
-  return <button {...p} className={`inline-flex items-center justify-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition focus-visible:outline-2 focus-visible:outline-violet-400 disabled:cursor-not-allowed ${k} ${className}`}>{children}</button>
+  return <button {...p} className={`inline-flex items-center justify-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition focus-visible:outline-2 focus-visible:outline-brand-400 disabled:cursor-not-allowed ${k} ${className}`}>{children}</button>
 }
 
 export function Modal({ open, title, onClose, children }: { open: boolean; title: string; onClose: () => void; children: ReactNode }) {
@@ -100,7 +104,7 @@ export function Modal({ open, title, onClose, children }: { open: boolean; title
           <motion.div
             role="dialog" aria-modal aria-label={title} onMouseDown={e => e.stopPropagation()}
             initial={{ opacity: 0, y: 16, scale: 0.97 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 8, scale: 0.98 }} transition={spring}
-            className="w-full max-w-md rounded-2xl bg-neutral-900 p-5 shadow-2xl ring-1 ring-white/10"
+            className="w-full max-w-md rounded-2xl bg-[#12121f]/95 p-5 backdrop-blur-xl shadow-2xl ring-1 ring-white/10"
           >
             <h2 className="mb-4 text-sm font-semibold text-neutral-100">{title}</h2>
             {children}
@@ -111,7 +115,7 @@ export function Modal({ open, title, onClose, children }: { open: boolean; title
   )
 }
 
-export const inputCls = 'w-full rounded-lg bg-black/40 px-3 py-2 text-sm text-neutral-100 ring-1 ring-white/10 placeholder:text-neutral-600 focus:outline-none focus:ring-violet-400/60'
+export const inputCls = 'w-full rounded-lg bg-black/40 px-3 py-2 text-sm text-neutral-100 ring-1 ring-white/10 placeholder:text-neutral-600 focus:outline-none focus:ring-brand-400/60'
 
 export function Avatar({ name, service }: { name: string; service: Service }) {
   const tone = service === 'claude' ? 'from-orange-400/80 to-rose-500/80' : 'from-emerald-400/80 to-teal-600/80'

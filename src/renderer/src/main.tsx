@@ -34,14 +34,14 @@ function App() {
     try { await fn(); if (ok) setToast({ text: ok }) } catch (e: any) { setToast({ text: e.message, error: true }) }
   }, [])
 
-  if (!state) return <div className="h-screen bg-[#0a0a0b]" />
+  if (!state) return <div className="h-screen aurora" />
   const running = state.runs.filter(r => r.status === 'running').length
 
   return (
-    <div className="flex h-screen bg-[#0a0a0b] text-neutral-200 antialiased">
-      <nav className="flex w-52 shrink-0 flex-col border-r border-white/5 bg-black/30 px-3 pb-4 pt-12" aria-label="Main">
+    <div className="flex h-screen aurora text-neutral-200 antialiased">
+      <nav className="flex w-52 shrink-0 flex-col border-r border-white/5 bg-white/[0.02] backdrop-blur-xl px-3 pb-4 pt-12" aria-label="Main">
         <div className="mb-6 flex items-center gap-2 px-2">
-          <div className="grid size-7 place-items-center rounded-lg bg-violet-500 text-xs font-bold text-white">sm</div>
+          <div className="grid size-7 place-items-center rounded-lg bg-gradient-to-br from-brand-500 via-fuchsia-500 to-cyan-400 text-xs font-bold text-white">sm</div>
           <span className="text-sm font-semibold tracking-tight text-neutral-100">switch-man</span>
         </div>
         {VIEWS.map(v => (
@@ -49,9 +49,9 @@ function App() {
             key={v} onClick={() => setView(v)} aria-current={view === v ? 'page' : undefined}
             className="relative mb-0.5 flex items-center justify-between rounded-lg px-3 py-2 text-left text-sm text-neutral-400 transition hover:text-neutral-100 aria-[current=page]:text-neutral-100"
           >
-            {view === v && <motion.span layoutId="nav" className="absolute inset-0 rounded-lg bg-white/[0.07]" transition={spring} />}
+            {view === v && <motion.span layoutId="nav" className="absolute inset-0 rounded-lg bg-gradient-to-r from-brand-500/25 to-cyan-400/5 ring-1 ring-white/10" transition={spring} />}
             <span className="relative">{v}</span>
-            {v === 'Agents' && running > 0 && <span className="relative rounded-full bg-violet-500/20 px-1.5 text-[10px] font-semibold text-violet-300">{running}</span>}
+            {v === 'Agents' && running > 0 && <span className="relative rounded-full bg-brand-500/20 px-1.5 text-[10px] font-semibold text-brand-300">{running}</span>}
           </button>
         ))}
         <div className="mt-auto px-2 text-[11px] leading-relaxed text-neutral-600">Local only. Login tokens are never read.</div>

@@ -1,1 +1,21 @@
 @import "tailwindcss";
+
+/* Electric indigo accent; paired with fuchsia and cyan in gradients. */
+@theme {
+  --color-brand-100: #ece9ff;
+  --color-brand-200: #d6d0ff;
+  --color-brand-300: #b3a8ff;
+  --color-brand-400: #8d7bff;
+  --color-brand-500: #6c55ff;
+}
+
+/* Dark ink with soft aurora light in the corners. */
+.aurora {
+  background:
+    radial-gradient(60rem 40rem at 90% -15%, rgb(124 92 255 / 0.22), transparent 60%),
+    radial-gradient(50rem 36rem at -10% 110%, rgb(34 211 238 / 0.13), transparent 60%),
+    radial-gradient(40rem 30rem at 55% 125%, rgb(236 72 153 / 0.12), transparent 60%),
+    #07070d;
+}
+
+.glass { background: rgb(255 255 255 / 0.04); backdrop-filter: blur(24px); }

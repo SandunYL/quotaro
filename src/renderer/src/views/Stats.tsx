@@ -74,7 +74,7 @@ export default function Stats({ state }: { state: AppState }) {
         </span>
       </div>
 
-      <motion.figure layout className="mt-6 rounded-2xl bg-neutral-900/60 p-5 ring-1 ring-white/5">
+      <motion.figure layout className="mt-6 rounded-2xl glass p-5 ring-1 ring-white/5">
         <figcaption className="mb-3 flex items-center gap-4 text-xs text-neutral-400">
           {SERIES.map(s => <span key={s.k} className="flex items-center gap-1.5"><span className="h-0.5 w-4 rounded" style={{ background: s.color }} />{s.name}</span>)}
         </figcaption>

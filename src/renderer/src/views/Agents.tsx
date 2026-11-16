@@ -131,7 +131,7 @@ function Thread({ title, sub, msgs, run, onSend, actions }: { title: string; sub
         {msgs.length === 0 && !busy && <p className="text-xs text-neutral-600">No messages to show.</p>}
         {msgs.map((m, i) => (
           <motion.div key={i} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }}
-            className={`max-w-[85%] whitespace-pre-wrap break-words rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${m.role === 'user' ? 'ml-auto bg-violet-500/15 text-violet-100' : 'bg-white/[0.04] text-neutral-200'}`}>
+            className={`max-w-[85%] whitespace-pre-wrap break-words rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${m.role === 'user' ? 'ml-auto bg-brand-500/15 text-brand-100' : 'bg-white/[0.04] text-neutral-200'}`}>
             {m.text}
           </motion.div>
         ))}
@@ -140,7 +140,7 @@ function Thread({ title, sub, msgs, run, onSend, actions }: { title: string; sub
         <div ref={end} />
       </div>
       <form onSubmit={e => { e.preventDefault(); submit() }} className="border-t border-white/5 p-4">
-        <div className="flex items-end gap-2 rounded-2xl bg-white/[0.03] p-2 ring-1 ring-white/10 focus-within:ring-violet-400/50">
+        <div className="flex items-end gap-2 rounded-2xl bg-white/[0.03] p-2 ring-1 ring-white/10 focus-within:ring-brand-400/50">
           <textarea
             value={text} onChange={e => setText(e.target.value)} rows={2} aria-label="Message"
             onKeyDown={e => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) { e.preventDefault(); submit() } }}

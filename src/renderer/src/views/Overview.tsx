@@ -25,7 +25,7 @@ export default function Overview({ state, act }: { state: AppState; act: Act }) 
     <motion.article
       key={a.id} layout initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, scale: 0.97 }}
       transition={{ ...spring, delay: i * 0.04 }}
-      className={`rounded-2xl bg-neutral-900/60 p-4 ring-1 transition ${a.active && canSwitch ? 'ring-violet-500/40' : 'ring-white/5'}`}
+      className={`rounded-2xl glass p-4 ring-1 transition ${a.active && canSwitch ? 'ring-brand-400/50 shadow-[0_0_48px_-16px_rgba(124,92,255,0.8)]' : 'ring-white/5'}`}
     >
       <header className="mb-3 flex items-center gap-3">
         <Avatar name={a.name} service={a.service} />
@@ -33,7 +33,7 @@ export default function Overview({ state, act }: { state: AppState; act: Act }) 
           <div className="flex items-center gap-2">
             <h3 className="truncate text-sm font-semibold text-neutral-100">{a.name}</h3>
             {!canSwitch && <span className="text-[11px] text-neutral-500">{SERVICE_LABEL[a.service]}</span>}
-            {a.active && canSwitch && <span className="rounded-full bg-violet-500/15 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-violet-300">Active</span>}
+            {a.active && canSwitch && <span className="rounded-full bg-brand-500/15 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-brand-300">Active</span>}
           </div>
           <p className="truncate text-xs text-neutral-500">{a.email ?? (a.exists ? 'Not signed in' : 'Folder missing')}</p>
         </div>
@@ -82,10 +82,10 @@ export default function Overview({ state, act }: { state: AppState; act: Act }) 
       </header>
 
       {!state.shellLinked && (
-        <motion.div initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} className="mb-6 flex items-center justify-between gap-4 rounded-2xl bg-violet-500/10 px-4 py-3 ring-1 ring-violet-500/20">
+        <motion.div initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} className="mb-6 flex items-center justify-between gap-4 rounded-2xl bg-brand-500/10 px-4 py-3 ring-1 ring-brand-500/20">
           <div>
-            <p className="text-sm font-medium text-violet-200">Connect your terminal</p>
-            <p className="text-xs text-violet-300/70">Adds a small hook to your shell so a switch applies at the next prompt.</p>
+            <p className="text-sm font-medium text-brand-200">Connect your terminal</p>
+            <p className="text-xs text-brand-300/70">Adds a small hook to your shell so a switch applies at the next prompt.</p>
           </div>
           <Button kind="primary" onClick={() => act(() => call('linkShell'), 'Connected. Open a new terminal window once.')}>Connect</Button>
         </motion.div>
@@ -128,7 +128,7 @@ function AddAccount({ open, onClose, act }: { open: boolean; onClose: () => void
         <fieldset className="grid grid-cols-2 gap-2">
           <legend className="mb-2 text-xs text-neutral-400">App</legend>
           {(['claude', 'codex'] as Service[]).map(s => (
-            <label key={s} className={`cursor-pointer rounded-xl px-3 py-2.5 text-sm ring-1 transition ${service === s ? 'bg-violet-500/15 text-violet-200 ring-violet-500/40' : 'text-neutral-400 ring-white/10 hover:bg-white/5'}`}>
+            <label key={s} className={`cursor-pointer rounded-xl px-3 py-2.5 text-sm ring-1 transition ${service === s ? 'bg-brand-500/15 text-brand-200 ring-brand-500/40' : 'text-neutral-400 ring-white/10 hover:bg-white/5'}`}>
               <input type="radio" name="service" className="sr-only" checked={service === s} onChange={() => setService(s)} />
               {SERVICE_LABEL[s]}
             </label>

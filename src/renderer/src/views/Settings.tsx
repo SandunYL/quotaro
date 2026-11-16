@@ -9,11 +9,11 @@ export default function Settings({ state, act }: { state: AppState; act: Act }) 
   return (
     <div className="h-full overflow-y-auto px-8 pb-16 pt-12">
       <h1 className="text-2xl font-semibold tracking-tight text-neutral-50">Settings</h1>
-      <div className="mt-6 max-w-2xl divide-y divide-white/5 rounded-2xl bg-neutral-900/60 ring-1 ring-white/5">
+      <div className="mt-6 max-w-2xl divide-y divide-white/5 rounded-2xl glass ring-1 ring-white/5">
         {state.loginItem !== null && (
           <Item title="Open at login" text="Starts hidden in the tray so reset alerts keep working.">
             <button role="switch" aria-checked={state.loginItem} aria-label="Open at login" onClick={() => act(() => call('setLoginItem', !state.loginItem))}
-              className={`relative h-6 w-10 rounded-full transition ${state.loginItem ? 'bg-violet-500' : 'bg-white/10'}`}>
+              className={`relative h-6 w-10 rounded-full transition ${state.loginItem ? 'bg-gradient-to-r from-brand-500 to-fuchsia-500' : 'bg-white/10'}`}>
               <span className={`absolute top-1 size-4 rounded-full bg-white transition-all ${state.loginItem ? 'left-5' : 'left-1'}`} />
             </button>
           </Item>
