@@ -2,6 +2,7 @@ import { app, BrowserWindow, ipcMain, Menu, Notification, Tray, dialog, nativeIm
 import { execFileSync } from 'node:child_process'
 import { appendFileSync, existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
+import appIcon from '../../build/icon.png?asset'
 import { EMOJIS, type AccountView, type AppState, type Msg, type Run, type Sample, type Service, type WindowKind } from '../shared/types.ts'
 import { backfill, claudeIdentity, claudeUsage, codexEmail, codexUsage, dedupe, limitsToStatus, readTail, autoStartAt } from './usage.ts'
 import * as store from './store.ts'
@@ -159,6 +160,7 @@ function createWindow(show = true) {
     minHeight: 560,
     show: false,
     backgroundColor: '#07070d',
+    icon: appIcon, // Windows and Linux window icon; macOS uses the app bundle's
     titleBarStyle: process.platform === 'darwin' ? 'hiddenInset' : 'default',
     webPreferences: { preload: join(__dirname, '../preload/index.js'), contextIsolation: true, sandbox: true },
   })
@@ -323,6 +325,7 @@ app.on('window-all-closed', () => {}) // keep running in the tray
 
 app.whenReady().then(async () => {
   store.cleanRunDir()
+  app.dock?.setIcon(appIcon) // the bundle has it once packaged; this covers `npm run dev`
   // First run: env.sh must exist before the shell hook reads it.
   if (process.platform !== 'win32' && !existsSync(join(store.ROOT, 'env.sh'))) await store.writeEnv(state)
   initHistory()

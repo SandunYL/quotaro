@@ -8,6 +8,7 @@ import Overview from './views/Overview.tsx'
 import Agents from './views/Agents.tsx'
 import Stats from './views/Stats.tsx'
 import Settings from './views/Settings.tsx'
+import logo from '../../../build/icon.svg'
 import './index.css'
 
 const VIEWS = ['Overview', 'Agents', 'Stats', 'Settings'] as const
@@ -41,7 +42,7 @@ function App() {
     <div className="flex h-screen aurora text-neutral-200 antialiased">
       <nav className="flex w-52 shrink-0 flex-col border-r border-white/5 bg-white/[0.02] backdrop-blur-xl px-3 pb-4 pt-12" aria-label="Main">
         <div className="mb-6 flex items-center gap-2 px-2">
-          <div className="grid size-7 place-items-center rounded-lg bg-gradient-to-br from-brand-500 via-fuchsia-500 to-cyan-400 text-xs font-bold text-white">sm</div>
+          <img src={logo} alt="" className="size-8 scale-125" />
           <span className="text-sm font-semibold tracking-tight text-neutral-100">switch-man</span>
         </div>
         {VIEWS.map(v => (

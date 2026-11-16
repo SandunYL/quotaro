@@ -1,0 +1,119 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <defs>
+    <!-- Base Squircle Diagonal Gradient: Indigo -> Deep Purple -> Electric Violet -->
+    <linearGradient id="squircle-bg" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#1a1240" />
+      <stop offset="48%" stop-color="#3b1d8f" />
+      <stop offset="100%" stop-color="#6c55ff" />
+    </linearGradient>
+
+    <!-- Soft Top-Right Fuchsia Bloom -->
+    <radialGradient id="fuchsia-bloom" cx="88%" cy="12%" r="65%">
+      <stop offset="0%" stop-color="#d946ef" stop-opacity="0.8" />
+      <stop offset="45%" stop-color="#d946ef" stop-opacity="0.3" />
+      <stop offset="100%" stop-color="#6c55ff" stop-opacity="0" />
+    </radialGradient>
+
+    <!-- Squircle Clip Path (824x824 centered in 1024 at x=100, y=100, rx=185) -->
+    <clipPath id="squircle-clip">
+      <rect x="100" y="100" width="824" height="824" rx="185" ry="185" />
+    </clipPath>
+
+    <!-- Outer Squircle Bezel Stroke -->
+    <linearGradient id="squircle-border" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.35" />
+      <stop offset="40%" stop-color="#ffffff" stop-opacity="0.1" />
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0.04" />
+    </linearGradient>
+
+    <!-- Usage Ring Gradient (Indigo -> Fuchsia -> Cyan) -->
+    <linearGradient id="usage-gradient" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#6c55ff" />
+      <stop offset="50%" stop-color="#d946ef" />
+      <stop offset="100%" stop-color="#22d3ee" />
+    </linearGradient>
+
+    <!-- Subtle Knob Drop Shadow -->
+    <filter id="knob-shadow" x="-30%" y="-30%" width="160%" height="170%">
+      <feDropShadow dx="0" dy="16" stdDeviation="18" flood-color="#09041a" flood-opacity="0.45" />
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#09041a" flood-opacity="0.25" />
+    </filter>
+
+    <!-- Subtle Track Inner Depth Shadow -->
+    <filter id="track-shadow" x="-15%" y="-15%" width="130%" height="130%">
+      <feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#000000" flood-opacity="0.35" />
+    </filter>
+  </defs>
+
+  <!-- Squircle App Icon Container (Clipped & Crisp) -->
+  <g clip-path="url(#squircle-clip)">
+    <!-- Rich Diagonal Gradient Fill -->
+    <rect x="100" y="100" width="824" height="824" fill="url(#squircle-bg)" />
+
+    <!-- Top-Right Fuchsia Bloom -->
+    <rect x="100" y="100" width="824" height="824" fill="url(#fuchsia-bloom)" />
+
+    <!-- Subtle Ambient Bottom-Left Indigo Depth -->
+    
+
+    <!-- Crisp 2px Top-Edge Specular Highlight -->
+    <line x1="220" y1="101" x2="804" y2="101" stroke="#ffffff" stroke-opacity="0.5" stroke-width="2" stroke-linecap="round" />
+    <line x1="280" y1="103" x2="744" y2="103" stroke="#ffffff" stroke-opacity="0.2" stroke-width="1.5" stroke-linecap="round" />
+
+    <!-- ============================================== -->
+    <!-- CENTER GLYPH: Large Pill Toggle Switch (-12° tilt) -->
+    <!-- Spans ~65% width (~536px), height ~260px, rx=130 -->
+    <!-- Center (512, 512) -->
+    <!-- ============================================== -->
+    <g transform="translate(512, 512) rotate(-12)">
+      <!-- Frosted Track Pill -->
+      <rect x="-268" y="-130" width="536" height="260" rx="130" ry="130"
+            fill="#ffffff" fill-opacity="0.14"
+            stroke="#ffffff" stroke-opacity="0.30" stroke-width="2.5"
+            filter="url(#track-shadow)" />
+
+      <!-- Left Inactive Socket / Pin Slot (Subtle high-contrast anchor) -->
+      <circle cx="-136" cy="0" r="42" fill="#ffffff" fill-opacity="0.08" stroke="#ffffff" stroke-opacity="0.18" stroke-width="2" />
+      <circle cx="-136" cy="0" r="14" fill="#ffffff" fill-opacity="0.25" />
+
+      <!-- Knob on Right (x = +136, radius = 104) -->
+      <g transform="translate(136, 0)">
+        <!-- Solid White Circle Knob with Soft Shadow -->
+        <circle cx="0" cy="0" r="104" fill="#ffffff" filter="url(#knob-shadow)" />
+
+        <!-- Crisp Inner Specular Inset Rim on Knob -->
+        <circle cx="0" cy="0" r="104" fill="none" stroke="#000000" stroke-opacity="0.06" stroke-width="2" />
+
+        <!-- Track Background for the Usage Ring (Subtle cool grey/slate track) -->
+        <!-- Radius = 76, stroke-width = 18 -->
+        <circle cx="0" cy="0" r="76" fill="none" stroke="#e8ebf4" stroke-width="18" stroke-linecap="round" />
+
+        <!-- Thick 70% Usage Ring Gradient Stroke -->
+        <!-- Circumference = 2 * PI * 76 ≈ 477.52. 70% of 477.52 ≈ 334.27. Stroke-dasharray: 334.3 478 -->
+        <!-- Rotated starting from top-left (135°) sweeping around -->
+        <circle cx="0" cy="0" r="76" fill="none"
+                stroke="url(#usage-gradient)"
+                stroke-width="18"
+                stroke-linecap="round"
+                stroke-dasharray="334.3 478"
+                transform="rotate(135)" />
+
+        <!-- Leading Edge Accent Dot on 70% tip for precision clarity -->
+        <!-- Angle: 135° + (0.70 * 360°) = 387° (27°). x = 76 * cos(27°) ≈ 67.7, y = 76 * sin(27°) ≈ 34.5 -->
+        <circle cx="67.7" cy="34.5" r="9" fill="#22d3ee" />
+        <circle cx="67.7" cy="34.5" r="4" fill="#ffffff" />
+
+        <!-- Knob Center Dot (Crisp high-contrast focus anchor) -->
+        <circle cx="0" cy="0" r="32" fill="#f1f3f9" />
+        <circle cx="0" cy="0" r="14" fill="#3b1d8f" />
+        <circle cx="0" cy="0" r="6" fill="#6c55ff" />
+      </g>
+    </g>
+  </g>
+
+  <!-- Outer Bezel Stroke on the Squircle (Border) -->
+  <rect x="100" y="100" width="824" height="824" rx="185" ry="185"
+        fill="none"
+        stroke="url(#squircle-border)"
+        stroke-width="2.5" />
+</svg>
