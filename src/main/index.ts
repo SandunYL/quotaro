@@ -1,9 +1,9 @@
 import { app, BrowserWindow, ipcMain, Menu, Notification, Tray, dialog, nativeImage, shell } from 'electron'
 import { execFileSync } from 'node:child_process'
-import { appendFileSync, existsSync, readFileSync, statSync } from 'node:fs'
+import { appendFileSync, existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import type { AccountView, AppState, Msg, Run, Sample, Service, WindowKind } from '../shared/types.ts'
-import { backfill, claudeIdentity, claudeUsage, codexEmail, codexUsage, dedupe, readTail } from './usage.ts'
+import { backfill, claudeIdentity, claudeUsage, codexEmail, codexUsage, dedupe, limitsToStatus, readTail, autoStartAt } from './usage.ts'
 import * as store from './store.ts'
 import { copyChat, listSessions, messagesOf, ownedLog, startRun, stopAll, stopRun, SESSION_ID } from './sessions.ts'
 
@@ -81,36 +81,50 @@ function refresh() {
     if (best) v.usage = best.usage
   }
   views.forEach(record)
-  scheduleAlerts()
+  scheduleTimers()
   updateTray()
   push()
 }
 
 function snapshot(): AppState {
   const login = process.platform === 'linux' ? null : app.getLoginItemSettings().openAtLogin
-  return { platform: process.platform, accounts: views, shellLinked: store.shellLinked(), bells: state.bells, loginItem: login, runs: [...runs.values()] }
+  return { platform: process.platform, accounts: views, shellLinked: store.shellLinked(), bells: state.bells, loginItem: login, autoStart: state.autoStart ?? {}, nextAuto, runs: [...runs.values()] }
 }
 
 const push = () => win?.webContents.send('state', snapshot())
 
-// A reset writes no file, so a timer has to fire at the reset time. Keyed by Claude account so one login alerts once.
-const alerts = new Map<string, { at: number; timer: NodeJS.Timeout }>()
+// A reset writes no file, so timers fire at reset times: alerts, and auto-start messages.
+// Keyed by Claude account, so logins that share one account act once.
+const timers = new Map<string, { at: number; timer: NodeJS.Timeout }>()
+const lastAuto = new Map<string, number>()
+let nextAuto: Record<string, number> = {}
 
-function scheduleAlerts() {
-  const want = new Map<string, { at: number; v: AccountView; k: WindowKind }>()
+function scheduleTimers() {
+  const now = Date.now(), want = new Map<string, { at: number; fire: () => void }>()
   for (const v of views) for (const k of ['5h', 'week'] as WindowKind[]) {
     const at = (k === '5h' ? v.usage?.five : v.usage?.week)?.resetsAt
-    if (!state.bells[`${v.id}:${k}`] || !at || at <= Date.now()) continue
-    want.set(`${v.accountUuid ?? v.id}:${k}`, { at, v, k })
-  }
-  for (const [key, a] of alerts) if (want.get(key)?.at !== a.at) { clearTimeout(a.timer); alerts.delete(key) }
-  for (const [key, { at, v, k }] of want) {
-    if (alerts.has(key)) continue
-    const timer = setTimeout(() => {
+    if (!state.bells[`${v.id}:${k}`] || !at || at <= now) continue
+    want.set(`${v.accountUuid ?? v.id}:${k}`, { at: at + 1000, fire: () => {
       new Notification({ title: `${SERVICE_NAME[v.service]} limit reset`, body: `${v.name}${v.email ? ` (${v.email})` : ''}: the ${WINDOW_NAME[k]} limit is back to 0%.` }).show()
-      refresh()
-    }, Math.min(at - Date.now() + 1000, 2 ** 31 - 1))
-    alerts.set(key, { at, timer })
+    } })
+  }
+  nextAuto = {}
+  for (const v of views) {
+    const message = state.autoStart?.[v.id], key = `auto:${v.accountUuid ?? v.id}`
+    if (message === undefined || v.service !== 'claude' || !v.exists || want.has(key)) continue
+    const at = autoStartAt(v.usage?.five?.resetsAt, timers.get(key)?.at, lastAuto.get(key), now)
+    nextAuto[v.id] = at
+    want.set(key, { at, fire: () => {
+      lastAuto.set(key, Date.now())
+      onRun(startRun(v, store.ROOT, message, undefined, onRun))
+      new Notification({ title: 'New Claude session started', body: `${v.name}: sent "${message}" right after the 5-hour reset.` }).show()
+    } })
+  }
+  for (const [key, t] of timers) if (want.get(key)?.at !== t.at) { clearTimeout(t.timer); timers.delete(key) }
+  for (const [key, { at, fire }] of want) {
+    if (timers.has(key)) continue
+    const timer = setTimeout(() => { timers.delete(key); try { fire() } catch (e) { console.error(e) } refresh() }, Math.min(Math.max(0, at - now), 2 ** 31 - 1))
+    timers.set(key, { at, timer })
   }
 }
 
@@ -171,7 +185,18 @@ const account = (id: unknown) => {
   return a
 }
 const save = () => { store.saveState(state); refresh() }
-const onRun = (r: Run) => { runs.set(r.id, r); win?.webContents.send('run', r) }
+const onRun = (r: Run) => {
+  runs.set(r.id, r)
+  win?.webContents.send('run', r)
+  // A finished Claude run carries exact limits: save them like a session status file, then re-read.
+  const a = state.accounts.find(a => a.id === r.accountId)
+  if (r.limits && r.status !== 'running' && a?.service === 'claude') {
+    const dir = join(a.dir, '.switch-man-status')
+    mkdirSync(dir, { recursive: true })
+    writeFileSync(join(dir, 'switch-man-run.json'), JSON.stringify(limitsToStatus(r.limits)))
+    refresh()
+  }
+}
 
 const api = {
   state: () => snapshot(),
@@ -202,6 +227,7 @@ const api = {
     state.accounts = state.accounts.filter(x => x !== a)
     if (state.active[a.service] === id) state.active[a.service] = `${a.service}-default`
     for (const k of Object.keys(state.bells)) if (k.startsWith(id + ':')) delete state.bells[k]
+    if (state.autoStart) delete state.autoStart[id]
     await store.writeEnv(state)
     save()
   },
@@ -224,6 +250,14 @@ const api = {
     account(id)
     if (k !== '5h' && k !== 'week') throw new Error('Unknown limit')
     if (on) state.bells[key] = true; else delete state.bells[key]
+    save()
+  },
+  setAutoStart(id: string, message: string | null) {
+    const a = account(id)
+    if (a.service !== 'claude') throw new Error('Auto-start is for Claude Code accounts')
+    state.autoStart ??= {}
+    if (message === null) delete state.autoStart[id]
+    else state.autoStart[id] = String(message).trim().slice(0, 500) || 'hi'
     save()
   },
   setLoginItem(on: boolean) { app.setLoginItemSettings({ openAtLogin: !!on, args: ['--hidden'] }); push() },

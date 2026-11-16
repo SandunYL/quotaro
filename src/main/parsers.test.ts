@@ -1,7 +1,7 @@
 // Run with `npm test` (Node's built-in runner; Node strips the types).
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { parseClaudeStatus, parseCodexLine, dedupe } from './usage.ts'
+import { parseClaudeStatus, parseCodexLine, dedupe, limitsToStatus, autoStartAt } from './usage.ts'
 import { claudeMeta, codexMeta, messagesOf, applyEvent } from './sessions.ts'
 import type { Run } from '../shared/types.ts'
 
@@ -64,4 +64,17 @@ test('agent output: Claude stream-json and Codex json events', () => {
   applyEvent(x, JSON.stringify({ type: 'item.completed', item: { type: 'agent_message', text: 'Hi' } }))
   applyEvent(x, JSON.stringify({ type: 'turn.failed', error: { message: 'quota' } }))
   assert.deepEqual([x.sessionId, x.status, x.error, x.output.length], ['t1', 'error', 'quota', 1])
+})
+
+test('a run\'s exact limits read back as usage', () => {
+  const r: Run = { id: 'r', accountId: 'a', service: 'claude', cwd: '/', prompt: 'hi', output: [], status: 'running' }
+  applyEvent(r, JSON.stringify({ type: 'rate_limit_event', rate_limit_info: { unifiedWindows: { five_hour: { utilization: 0.65, resetsAt: NOW / 1000 + 600 }, seven_day: { utilization: 0.31, resetsAt: NOW / 1000 + 9000 } } } }))
+  assert.deepEqual(parseClaudeStatus(limitsToStatus(r.limits!), NOW, NOW), { five: { percent: 65, resetsAt: NOW + 600_000 }, week: { percent: 31, resetsAt: NOW + 9_000_000 }, asOf: NOW })
+})
+
+test('auto-start time: after the reset, soon with no window, never twice in 10 minutes', () => {
+  assert.equal(autoStartAt(NOW + 3600_000, undefined, undefined, NOW), NOW + 3660_000)
+  assert.equal(autoStartAt(null, undefined, undefined, NOW), NOW + 60_000)
+  assert.equal(autoStartAt(null, NOW + 30_000, undefined, NOW), NOW + 30_000) // a refresh keeps the pending time
+  assert.equal(autoStartAt(null, undefined, NOW - 60_000, NOW), NOW + 540_000) // just sent: wait out the retry gap
 })

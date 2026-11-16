@@ -149,6 +149,7 @@ export function applyEvent(run: Run, line: string) {
   // Claude Code
   if (o.session_id && !run.sessionId) run.sessionId = o.session_id
   if (o.type === 'assistant') say(textOf(o.message?.content))
+  if (o.type === 'rate_limit_event' && o.rate_limit_info?.unifiedWindows) run.limits = o.rate_limit_info.unifiedWindows
   if (o.type === 'result') { run.status = o.is_error ? 'error' : 'done'; if (o.is_error) run.error = o.result ?? o.subtype }
   // Codex (current and older event shapes)
   if (o.type === 'thread.started' && o.thread_id) run.sessionId ??= o.thread_id

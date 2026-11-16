@@ -23,6 +23,8 @@ export interface AppState {
   shellLinked: boolean
   bells: Record<string, boolean> // `${accountId}:${WindowKind}`
   loginItem: boolean | null // null where the OS has no login items (Linux)
+  autoStart: Record<string, string> // Claude accountId → message sent when its 5-hour window resets
+  nextAuto: Record<string, number> // accountId → when that message goes out
   runs: Run[]
 }
 
@@ -50,5 +52,6 @@ export interface Run {
   prompt: string
   output: Msg[]
   status: 'running' | 'done' | 'error'
+  limits?: Record<string, { utilization: number; resetsAt: number }> // Claude's rate_limit_event, exact
   error?: string
 }

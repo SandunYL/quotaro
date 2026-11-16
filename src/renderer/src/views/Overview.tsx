@@ -3,7 +3,7 @@ import { AnimatePresence, motion } from 'motion/react'
 import type { AccountView, AppState, Service } from '../../../shared/types.ts'
 import { call } from '../api.ts'
 import type { Act } from '../main.tsx'
-import { Avatar, Button, LimitView, Modal, SERVICE_LABEL, inputCls, spring, useNow } from '../ui.tsx'
+import { Avatar, Button, LimitView, Modal, SERVICE_LABEL, inputCls, spring, timeLeft, useNow } from '../ui.tsx'
 
 export default function Overview({ state, act }: { state: AppState; act: Act }) {
   const now = useNow()
@@ -51,6 +51,8 @@ export default function Overview({ state, act }: { state: AppState; act: Act }) 
           )
         })}
       </div>
+
+      {a.service === 'claude' && a.exists && <AutoStart a={a} state={state} act={act} now={now} />}
 
       {a.service === 'claude' && a.exists && !a.tracking && (
         <div className="mt-3 flex items-center justify-between gap-2 rounded-xl bg-amber-500/10 px-3 py-2 text-xs text-amber-200">
@@ -160,5 +162,38 @@ function Rename({ account, onClose, act }: { account: AccountView | null; onClos
         </div>
       </form>
     </Modal>
+  )
+}
+
+/** Sends a message right after each 5-hour reset, so the next window starts as early as possible. */
+function AutoStart({ a, state, act, now }: { a: AccountView; state: AppState; act: Act; now: number }) {
+  const message = state.autoStart[a.id], on = message !== undefined, next = state.nextAuto[a.id]
+  const shared = !on ? undefined : state.accounts.find(o => o.id !== a.id && o.accountUuid && o.accountUuid === a.accountUuid && state.autoStart[o.id] !== undefined && state.nextAuto[o.id])
+  return (
+    <div className="mt-2 rounded-xl bg-white/[0.03] px-3 py-2.5 ring-1 ring-white/5">
+      <div className="flex items-center gap-3">
+        <button role="switch" aria-checked={on} aria-label="Auto-start a session at each reset"
+          onClick={() => act(() => call('setAutoStart', a.id, on ? null : 'hi'), on ? undefined : 'A message goes out a minute after each 5-hour reset')}
+          className={`relative h-5 w-9 shrink-0 rounded-full transition ${on ? 'bg-gradient-to-r from-brand-500 to-fuchsia-500' : 'bg-white/10'}`}>
+          <span className={`absolute top-0.5 size-4 rounded-full bg-white transition-all ${on ? 'left-[18px]' : 'left-0.5'}`} />
+        </button>
+        <div className="min-w-0 flex-1">
+          <div className="text-xs font-medium text-neutral-300">Auto-start at reset</div>
+          <div className="truncate text-[11px] text-neutral-500">
+            {!on ? 'Sends a message a minute after each 5-hour reset'
+              : shared ? `Handled by ${shared.name}: same Claude account`
+              : next ? `Next message ${next - now < 60_000 ? 'in under a minute' : `in ${timeLeft(next, now)}`}` : 'Scheduling…'}
+          </div>
+        </div>
+      </div>
+      {on && (
+        <input
+          key={message} defaultValue={message} maxLength={500} aria-label="Message to send at reset"
+          onBlur={e => e.target.value.trim() !== message && act(() => call('setAutoStart', a.id, e.target.value), 'Message saved')}
+          onKeyDown={e => e.key === 'Enter' && e.currentTarget.blur()}
+          className={`${inputCls} mt-2 py-1.5 text-xs`}
+        />
+      )}
+    </div>
   )
 }

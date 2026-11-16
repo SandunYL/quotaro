@@ -42,6 +42,21 @@ export function parseClaudeStatus(json: any, asOf: number, now = Date.now()): Us
   return { five: w(rl.five_hour), week: w(rl.seven_day), asOf }
 }
 
+/**
+ * When the auto-start message goes out: a minute after the 5-hour reset. With no window running, soon,
+ * keeping an already-set time so each refresh doesn't push it back. Never within `retry` of the last send.
+ */
+export function autoStartAt(reset: number | null | undefined, pending: number | undefined, lastSent: number | undefined, now: number, delay = 60_000, retry = 600_000) {
+  const at = reset && reset > now ? reset + delay : pending ?? now + delay
+  return Math.max(at, (lastSent ?? 0) + retry)
+}
+
+/** A run's exact limits in status-line shape, so they are read like any other session's file. */
+export function limitsToStatus(limits: Record<string, { utilization: number; resetsAt: number }>) {
+  const w = (x?: { utilization: number; resetsAt: number }) => x && { used_percentage: Math.round(x.utilization * 1000) / 10, resets_at: x.resetsAt }
+  return { session_id: 'switch-man-run', rate_limits: { five_hour: w(limits.five_hour), seven_day: w(limits.seven_day) } }
+}
+
 /** Newest reading among this Claude Code config folder's per-session status files. */
 export function claudeUsage(cfgDir: string, now = Date.now()): Usage | undefined {
   const files = STATUS_DIRS.flatMap(d => {

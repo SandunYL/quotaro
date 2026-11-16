@@ -21,6 +21,7 @@ export interface State {
   accounts: Account[]
   active: Record<Service, string>
   bells: Record<string, boolean>
+  autoStart?: Record<string, string>
   backfilled?: boolean
 }
 
