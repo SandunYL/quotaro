@@ -94,4 +94,11 @@ test('copying a chat to another account brings its side folder and never overwri
   assert.equal(readFileSync(target, 'utf8'), '{"type":"user"}\n')
   assert.equal(readFileSync(join(root, 'b', 'projects', '-w', 's1', 'tool-results', 'x.txt'), 'utf8'), 'x')
   assert.throws(() => copyChat(src, dest), /already has this chat/)
+  // refresh: an older copy is replaced by the newer original, after a backup
+  const { utimesSync, readdirSync } = await import('node:fs')
+  writeFileSync(src, '{"type":"user"}\n{"type":"assistant"}\n')
+  utimesSync(target, new Date(0), new Date(0))
+  copyChat(src, dest, true)
+  assert.equal(readFileSync(target, 'utf8'), '{"type":"user"}\n{"type":"assistant"}\n')
+  assert.equal(readdirSync(join(root, 'b', 'projects', '-w')).filter(f => f.includes('.bak-')).length, 1)
 })

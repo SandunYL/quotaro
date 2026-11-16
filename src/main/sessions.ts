@@ -119,10 +119,17 @@ export function ownedLog(accounts: Account[], path: string): Account {
   return a
 }
 
-/** Copies a Claude Code chat into another account so it can be resumed there. Never overwrites. */
-export function copyChat(src: string, dest: Account): string {
+/**
+ * Copies a Claude Code chat into another account so it can be resumed there.
+ * An existing copy is an error, or with `refresh`, replaced by a newer original after a dated backup.
+ */
+export function copyChat(src: string, dest: Account, refresh = false): string {
   const target = join(dest.dir, 'projects', basename(dirname(src)), basename(src))
-  if (existsSync(target)) throw new Error('That account already has this chat')
+  if (existsSync(target)) {
+    if (!refresh) throw new Error('That account already has this chat')
+    if (statSync(src).mtimeMs <= statSync(target).mtimeMs) return target // the copy is already current
+    copyFileSync(target, `${target}.bak-${Date.now()}`)
+  }
   mkdirSync(dirname(target), { recursive: true })
   copyFileSync(src, target)
   const side = src.slice(0, -'.jsonl'.length)

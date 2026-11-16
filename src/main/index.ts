@@ -286,10 +286,19 @@ const api = {
     const r = await dialog.showOpenDialog(win!, { properties: ['openDirectory'] })
     return r.canceled ? null : r.filePaths[0]
   },
-  send(accountId: string, cwd: string, prompt: string, sessionId?: string) {
+  /** Runs a prompt as `accountId`. With `path`, a chat from another Claude account is first copied (or refreshed) into it. */
+  send(accountId: string, cwd: string, prompt: string, sessionId?: string, path?: string) {
     prompt = String(prompt).trim()
     if (!prompt) throw new Error('Type a message first')
-    const r = startRun(account(accountId), String(cwd), prompt, sessionId || undefined, onRun)
+    const a = account(accountId)
+    if (path) {
+      const owner = ownedLog(state.accounts, path)
+      if (owner.id !== a.id) {
+        if (owner.service !== 'claude' || a.service !== 'claude') throw new Error('Only Claude Code chats can move between accounts')
+        copyChat(path, a, true)
+      }
+    }
+    const r = startRun(a, String(cwd), prompt, sessionId || undefined, onRun)
     onRun(r)
     return r.id
   },
@@ -300,7 +309,7 @@ const api = {
     const src = ownedLog(state.accounts, path), dest = account(destId)
     if (src.service !== 'claude' || dest.service !== 'claude') throw new Error('Only Claude Code chats can move between accounts')
     if (src.id === dest.id) throw new Error('Pick another account')
-    copyChat(path, dest)
+    copyChat(path, dest, true)
     return api.openInTerminal(dest.id, basename(path, '.jsonl'), cwd)
   },
   openInTerminal(accountId: string, sessionId: string, cwd: string) {

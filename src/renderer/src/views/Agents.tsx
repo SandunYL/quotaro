@@ -36,11 +36,14 @@ export default function Agents({ state, act }: { state: AppState; act: Act }) {
     return () => clearInterval(t)
   }, [pick, live])
 
+  const target = run ?? session
+  // Claude chats continue as the account you switched to; the chat is copied over when needed.
+  const sender = target && (target.service === 'claude' ? state.accounts.find(a => a.service === 'claude' && a.active) : undefined) || state.accounts.find(a => a.id === target?.accountId)
   const send = (text: string) => {
-    const target = run ?? session
-    if (!target) return
-    const accountId = target.accountId, cwd = target.cwd, sid = run ? run.sessionId : session!.id
-    return act(async () => { const id = await call('send', accountId, cwd, text, sid); setPick({ kind: 'run', id }) })
+    if (!target || !sender) return
+    const sid = run ? run.sessionId : session!.id
+    const path = session?.path ?? sessions.find(s => s.id === run?.sessionId)?.path
+    return act(async () => { const id = await call('send', sender.id, target.cwd, text, sid, path); setPick({ kind: 'run', id }) })
   }
 
   const runs = [...state.runs].reverse()
@@ -83,6 +86,7 @@ export default function Agents({ state, act }: { state: AppState; act: Act }) {
             sub={`${accountName((run ?? session)!.accountId)} · ${(run ?? session)!.cwd}`}
             msgs={run ? run.output : msgs}
             run={run}
+            sender={sender?.name}
             onSend={send}
             actions={<Actions state={state} act={act} session={session} run={run} onOpenSession={p => setPick({ kind: 'session', path: p })} sessions={sessions} />}
           />
@@ -114,7 +118,7 @@ function Row({ title, meta, live, selected, error, onClick }: { title: string; m
   )
 }
 
-function Thread({ title, sub, msgs, run, onSend, actions }: { title: string; sub: string; msgs: Msg[]; run?: Run; onSend: (t: string) => unknown; actions: React.ReactNode }) {
+function Thread({ title, sub, msgs, run, sender, onSend, actions }: { title: string; sub: string; msgs: Msg[]; run?: Run; sender?: string; onSend: (t: string) => unknown; actions: React.ReactNode }) {
   const [text, setText] = useState('')
   const end = useRef<HTMLDivElement>(null)
   useEffect(() => { end.current?.scrollIntoView({ behavior: 'smooth' }) }, [msgs.length])
@@ -144,7 +148,7 @@ function Thread({ title, sub, msgs, run, onSend, actions }: { title: string; sub
           <textarea
             value={text} onChange={e => setText(e.target.value)} rows={2} aria-label="Message"
             onKeyDown={e => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) { e.preventDefault(); submit() } }}
-            placeholder={busy ? 'Working…' : 'Message this agent (⌘/Ctrl + Enter)'}
+            placeholder={busy ? 'Working…' : `Message as ${sender ?? 'this account'} (⌘/Ctrl + Enter)`}
             className="flex-1 resize-none bg-transparent px-2 py-1 text-sm text-neutral-100 placeholder:text-neutral-600 focus:outline-none"
           />
           <Button kind="primary" type="submit" disabled={busy || !text.trim()}>Send</Button>
