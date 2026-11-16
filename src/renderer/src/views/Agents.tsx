@@ -3,7 +3,7 @@ import { AnimatePresence, motion } from 'motion/react'
 import type { AppState, Msg, Run, Session } from '../../../shared/types.ts'
 import { call } from '../api.ts'
 import type { Act } from '../main.tsx'
-import { Button, Modal, SERVICE_LABEL, ago, inputCls, spring, useNow } from '../ui.tsx'
+import { Button, Modal, SERVICE_LABEL, ago, inUse, inputCls, spring, useNow } from '../ui.tsx'
 
 type Pick = { kind: 'session'; path: string } | { kind: 'run'; id: string } | null
 const folderName = (p: string) => p.split(/[\\/]/).filter(Boolean).pop() ?? p
@@ -184,7 +184,7 @@ function Actions({ state, act, session, run, sessions, onOpenSession }: { state:
 }
 
 function NewAgent({ open, onClose, state, act, onStarted }: { open: boolean; onClose: () => void; state: AppState; act: Act; onStarted: (id: string) => void }) {
-  const accounts = state.accounts.filter(a => a.exists)
+  const accounts = state.accounts.filter(inUse)
   const [accountId, setAccountId] = useState('')
   const [cwd, setCwd] = useState('')
   const [prompt, setPrompt] = useState('')

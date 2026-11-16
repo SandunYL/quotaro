@@ -1,8 +1,11 @@
 import { useEffect, useId, useState, type ReactNode } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
-import type { Limit, Service } from '../../shared/types.ts'
+import type { AccountView, Limit, Service } from '../../shared/types.ts'
 
 export const SERVICE_LABEL: Record<Service, string> = { claude: 'Claude Code', codex: 'Codex' }
+/** Accounts the user really has: any they added, or a Main login that is signed in or has usage. An unused app stays hidden. */
+export const inUse = (a: AccountView) => a.exists && (!a.isDefault || !!a.email || !!a.usage)
+
 export const spring = { type: 'spring', stiffness: 380, damping: 32 } as const
 
 /** Re-renders every `ms` so countdowns stay current. */

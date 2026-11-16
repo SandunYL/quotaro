@@ -3,7 +3,7 @@ import { AnimatePresence, motion } from 'motion/react'
 import type { AccountView, AppState, Service } from '../../../shared/types.ts'
 import { call } from '../api.ts'
 import type { Act } from '../main.tsx'
-import { Avatar, Button, LimitView, Modal, SERVICE_LABEL, inputCls, spring, timeLeft, useNow } from '../ui.tsx'
+import { Avatar, Button, LimitView, Modal, SERVICE_LABEL, inUse, inputCls, spring, timeLeft, useNow } from '../ui.tsx'
 
 export default function Overview({ state, act }: { state: AppState; act: Act }) {
   const now = useNow()
@@ -11,8 +11,7 @@ export default function Overview({ state, act }: { state: AppState; act: Act }) 
   const [renaming, setRenaming] = useState<AccountView | null>(null)
   const [removing, setRemoving] = useState<AccountView | null>(null)
 
-  // A Main account whose app was never used is noise; it shows up once its folder exists.
-  const shown = state.accounts.filter(a => a.exists || !a.isDefault)
+  const shown = state.accounts.filter(inUse)
   const byService = (s: Service) => shown.filter(a => a.service === s)
   // A provider gets its own switcher section only once it has more than one account.
   const multi = (['claude', 'codex'] as Service[]).filter(s => byService(s).length > 1)

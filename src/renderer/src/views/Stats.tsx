@@ -2,7 +2,7 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { motion } from 'motion/react'
 import type { AppState, Sample, WindowKind } from '../../../shared/types.ts'
 import { call } from '../api.ts'
-import { SERVICE_LABEL } from '../ui.tsx'
+import { SERVICE_LABEL, inUse } from '../ui.tsx'
 
 const RANGES = [{ label: '24h', ms: 24 * 3600_000 }, { label: '7 days', ms: 7 * 24 * 3600_000 }, { label: '30 days', ms: 30 * 24 * 3600_000 }]
 // Categorical slots 1 and 2 of the dark reference palette.
@@ -21,7 +21,7 @@ export function valueAt(points: Sample[], t: number): number | undefined {
 
 export default function Stats({ state }: { state: AppState }) {
   const [samples, setSamples] = useState<Sample[]>([])
-  const accounts = state.accounts.filter(a => a.exists || !a.isDefault)
+  const accounts = state.accounts.filter(inUse)
   const [accountId, setAccountId] = useState(accounts[0]?.id ?? '')
   const [range, setRange] = useState(RANGES[1])
   const [hover, setHover] = useState<number | null>(null)
