@@ -172,11 +172,11 @@ function Actions({ state, act, session, run, sessions, onOpenSession }: { state:
       {sid && target && <Button onClick={() => act(() => call('openInTerminal', target.accountId, sid, target.cwd))}>Open in terminal</Button>}
       {session?.service === 'claude' && others.length > 0 && (
         <span className="ml-auto flex items-center gap-1.5">
-          <select value={dest} onChange={e => setDest(e.target.value)} aria-label="Copy to account" className="rounded-lg bg-white/5 px-2 py-1.5 text-xs text-neutral-200 ring-1 ring-white/10">
-            <option value="">Copy to account…</option>
+          <select value={dest} onChange={e => setDest(e.target.value)} aria-label="Continue on account" className="rounded-lg bg-white/5 px-2 py-1.5 text-xs text-neutral-200 ring-1 ring-white/10">
+            <option value="">Continue on account…</option>
             {others.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
           </select>
-          <Button disabled={!dest} onClick={() => act(() => call('copyChat', session.path, dest), 'Copied. Resume it from that account.')}>Copy</Button>
+          <Button disabled={!dest} onClick={() => act(() => call('continueOn', session.path, dest, session.cwd), `Continuing on ${others.find(a => a.id === dest)?.name} in a new terminal`)}>Continue there</Button>
         </span>
       )}
     </>

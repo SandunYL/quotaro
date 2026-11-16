@@ -1,7 +1,7 @@
 import { app, BrowserWindow, ipcMain, Menu, Notification, Tray, dialog, nativeImage, shell } from 'electron'
 import { execFileSync } from 'node:child_process'
 import { appendFileSync, existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from 'node:fs'
-import { join } from 'node:path'
+import { basename, join } from 'node:path'
 import appIcon from '../../build/icon.png?asset'
 import { EMOJIS, type AccountView, type AppState, type Msg, type Run, type Sample, type Service, type WindowKind } from '../shared/types.ts'
 import { backfill, claudeIdentity, claudeUsage, codexEmail, codexUsage, dedupe, limitsToStatus, readTail, autoStartAt } from './usage.ts'
@@ -295,11 +295,13 @@ const api = {
   },
   stop: (runId: string) => stopRun(runId),
   dismissRun(runId: string) { if (runs.get(runId)?.status !== 'running') runs.delete(runId); push() },
-  copyChat(path: string, destId: string) {
+  /** Copies a Claude Code chat to another account (never overwriting) and resumes it there in a terminal. */
+  continueOn(path: string, destId: string, cwd: string) {
     const src = ownedLog(state.accounts, path), dest = account(destId)
-    if (src.service !== 'claude' || dest.service !== 'claude') throw new Error('Only Claude Code chats can be copied')
+    if (src.service !== 'claude' || dest.service !== 'claude') throw new Error('Only Claude Code chats can move between accounts')
     if (src.id === dest.id) throw new Error('Pick another account')
     copyChat(path, dest)
+    return api.openInTerminal(dest.id, basename(path, '.jsonl'), cwd)
   },
   openInTerminal(accountId: string, sessionId: string, cwd: string) {
     const a = account(accountId)

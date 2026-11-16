@@ -31,7 +31,7 @@ Starts from everything [AccountDeck](https://github.com/nadim-sheikh/accountDeck
 - **Reset alerts.** A bell on each limit sends a system notification when it resets. The app keeps running in the tray.
 - **Auto-start at reset.** Per Claude account: a message (default "hi") goes out a minute after each 5-hour reset, so the next window starts right away. Each send reports the exact next reset, which schedules the one after.
 - **Stats.** Every change is saved to `~/.switch-man/history.jsonl`, backfilled from existing status files and Codex logs.
-- **Agents.** Chats from the last 7 days, with live ones marked. Start a new agent, or message any chat: it continues as a background `--resume` run. Claude Code chats can be copied to another account.
+- **Agents.** Chats from the last 7 days, with live ones marked. Start a new agent, or message any chat: it continues as a background `--resume` run. A Claude Code chat can be continued on another account: it is copied there and resumed in a terminal.
 
 Not built (yet): Claude Desktop and ChatGPT accounts, exact usage via the Anthropic API, copying setup/MCP between accounts, fish shell.
 

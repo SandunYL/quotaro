@@ -78,3 +78,20 @@ test('auto-start time: after the reset, soon with no window, never twice in 10 m
   assert.equal(autoStartAt(null, NOW + 30_000, undefined, NOW), NOW + 30_000) // a refresh keeps the pending time
   assert.equal(autoStartAt(null, undefined, NOW - 60_000, NOW), NOW + 540_000) // just sent: wait out the retry gap
 })
+
+test('copying a chat to another account brings its side folder and never overwrites', async () => {
+  const { mkdtempSync, mkdirSync, writeFileSync, readFileSync } = await import('node:fs')
+  const { join } = await import('node:path')
+  const { tmpdir } = await import('node:os')
+  const { copyChat } = await import('./sessions.ts')
+  const root = mkdtempSync(join(tmpdir(), 'sm-copy-'))
+  const src = join(root, 'a', 'projects', '-w', 's1.jsonl')
+  mkdirSync(join(root, 'a', 'projects', '-w', 's1', 'tool-results'), { recursive: true })
+  writeFileSync(src, '{"type":"user"}\n')
+  writeFileSync(join(root, 'a', 'projects', '-w', 's1', 'tool-results', 'x.txt'), 'x')
+  const dest = { id: 'b', service: 'claude' as const, name: 'B', dir: join(root, 'b'), isDefault: false }
+  const target = copyChat(src, dest)
+  assert.equal(readFileSync(target, 'utf8'), '{"type":"user"}\n')
+  assert.equal(readFileSync(join(root, 'b', 'projects', '-w', 's1', 'tool-results', 'x.txt'), 'utf8'), 'x')
+  assert.throws(() => copyChat(src, dest), /already has this chat/)
+})
